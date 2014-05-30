@@ -12,11 +12,13 @@ public class Helper {
             MessageDigest md = MessageDigest.getInstance("MD5");
             byte[] messageDigest = md.digest(text.getBytes());
             BigInteger number = new BigInteger(1, messageDigest);
-            String hashtext = number.toString(16);
-            while (hashtext.length() < 32) {
-                hashtext = "0" + hashtext;
-            }
-            return hashtext.substring(0,4);
+// Removido para considerar apenas inteiros para este trabalho específico
+//            String hashtext = number.toString(16);
+//            while (hashtext.length() < 32) {
+//                hashtext = "0" + hashtext;
+//                
+//            }
+            return number.toString().substring(0,4);
         }
         catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
@@ -35,7 +37,6 @@ public class Helper {
             }
         }
         return ipAddress;
-//      return enderecoIp[0] + "." + enderecoIp[1] + "." + enderecoIp[2] + "."+ enderecoIp[3];
 	}
 	
 	public static byte[] enderecoIpStringToByte(String enderecoIp){
@@ -46,16 +47,6 @@ public class Helper {
 			e.printStackTrace();
 		}
 		return inetAddress.getAddress();
-		
-//		byte[] ret = new byte[4];
-//		String[] ip = enderecoIp.split("\\.");
-//		if (ip.length == 4){
-//			ret[0] = Byte.parseByte(ip[0]);
-//			ret[1] = Byte.parseByte(ip[1]);	
-//			ret[2] = Byte.parseByte(ip[2]);
-//			ret[3] = Byte.parseByte(ip[3]);
-//		}
-//		return ret;
 	}
 	
 	public static String byteArrayToString(byte[] bytes)
