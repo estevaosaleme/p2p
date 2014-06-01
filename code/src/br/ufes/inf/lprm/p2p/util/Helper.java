@@ -7,7 +7,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class Helper {
-	public static String gerarMd5(String text){
+	public static Integer gerarMd5(String text){
 		try {
             MessageDigest md = MessageDigest.getInstance("MD5");
             byte[] messageDigest = md.digest(text.getBytes());
@@ -18,11 +18,23 @@ public class Helper {
 //                hashtext = "0" + hashtext;
 //                
 //            }
-            return number.toString().substring(0,4);
+            return Integer.parseInt(number.toString().substring(0,4));
         }
         catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
+	}
+	
+	public static final byte[] intToByteArray(int value) {
+	    return new byte[] {
+	            (byte)(value >>> 24),
+	            (byte)(value >>> 16),
+	            (byte)(value >>> 8),
+	            (byte)value};
+	}
+	
+	public static final int byteArrayToInt(byte[] bytes) {
+	     return bytes[0] << 24 | (bytes[1] & 0xFF) << 16 | (bytes[2] & 0xFF) << 8 | (bytes[3] & 0xFF);
 	}
 	
 	public static String enderecoIpByteToString(byte[] enderecoIp){

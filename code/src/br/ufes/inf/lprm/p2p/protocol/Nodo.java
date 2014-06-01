@@ -9,21 +9,21 @@ public class Nodo {
 		idNodo = Helper.gerarMd5(enderecoIp);
 	}
 	
-	private String idNodo;
+	private int idNodo;
 	private String enderecoIpNodo;
-	private String sucessorId;
+	private int sucessorId;
 	private String sucessorEnderecoIp;
-	private String antecessorId;
+	private int antecessorId;
 	private String antecessorEnderecoIp;
 	
-	public String getIdNodo() {
+	public int getIdNodo() {
 		return idNodo;
 	}
 	
-	public String getSucessorId() {
+	public int getSucessorId() {
 		return sucessorId;
 	}
-	public void setSucessorId(String sucessorId) {
+	public void setSucessorId(int sucessorId) {
 		this.sucessorId = sucessorId;
 	}
 	public String getSucessorEnderecoIp() {
@@ -33,10 +33,10 @@ public class Nodo {
 		this.sucessorEnderecoIp = sucessorEnderecoIp;
 	}
 	
-	public String getAntecessorId() {
+	public int getAntecessorId() {
 		return antecessorId;
 	}
-	public void setAntecessorId(String antecessorId) {
+	public void setAntecessorId(int antecessorId) {
 		this.antecessorId = antecessorId;
 	}
 	public String getAntecessorEnderecoIp() {
