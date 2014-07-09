@@ -3,7 +3,7 @@ package br.ufes.inf.lprm.p2p.util;
 public class Constantes {
 	public final static Integer PORTA = 12345;
 	
-	public final static byte CODIGO_NAO_ATRIBUIDO = 0;
+	public final static byte CODIGO_NAO_ATRIBUIDO = -1;
 	
 	public final static byte CODIGO_ENVIO_JOIN = 0;
 	public final static byte CODIGO_ENVIO_LEAVE = 1;

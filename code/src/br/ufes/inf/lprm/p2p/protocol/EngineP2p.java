@@ -30,7 +30,7 @@ public class EngineP2p {
 		try {
 			listaInterfaces = NetworkInterface.getNetworkInterfaces();
 		} catch (SocketException s) {
-			System.err.println("*ERRO: Não foi possível obter as interfaces de rede. Por favor, contacte o desenvovedor.");
+			System.err.println("*ERRO: Nï¿½o foi possï¿½vel obter as interfaces de rede. Por favor, contacte o desenvovedor.");
 			s.printStackTrace();
 			System.exit(0);
 		}
@@ -48,26 +48,26 @@ public class EngineP2p {
 		}
 				
 		if (interfacesIpv4.size() > 1){
-			System.out.println("*ATENÇÃO: Mais de uma interface de rede foi detectada:");
+			System.out.println("*ATENï¿½ï¿½O: Mais de uma interface de rede foi detectada:");
 			int i = 1;
 			for (Inet4Address inet4Address : interfacesIpv4) {
 				System.out.println(i + " - " + inet4Address.getHostAddress());
 				i++;
 			}
 			
-			System.out.println("*INFORME O NÚMERO DA INTERFACE QUE SERÁ UTILIZADA:");
+			System.out.println("*INFORME O Nï¿½MERO DA INTERFACE QUE SERï¿½ UTILIZADA:");
 			BufferedReader buffer = new BufferedReader(new InputStreamReader(System.in));
 			int opcao = 99;
 			while (opcao >= i || opcao < 1 ){
 				try {
 					opcao = Integer.parseInt(buffer.readLine());
 				} catch (Exception e) {
-					System.err.println("*ERRO: digite um número válido que indica a interface de rede.");
+					System.err.println("*ERRO: digite um nï¿½mero vï¿½lido que indica a interface de rede.");
 				}
 				if (opcao >= 1 && opcao < i)
 					enderecoIpHost = interfacesIpv4.get(opcao-1);
 				else
-					System.out.println(">>> Opção inválida.");
+					System.out.println(">>> Opï¿½ï¿½o invï¿½lida.");
 			}
 		}
 		
@@ -96,7 +96,8 @@ public class EngineP2p {
 	public byte[] response(byte[] enderecoIpOrigem, byte[] pacoteRecebido){
 		byte[] dadosResposta = new byte[1024]; 
 		byte codigoDados = pacoteRecebido[0];
-	    switch (codigoDados) {
+	    
+		switch (codigoDados) {
 			case Constantes.CODIGO_ENVIO_JOIN:
 				MessageJoin mensagemJoinCliente = new MessageJoin();
 				mensagemJoinCliente.setEnderecoIpOrigemMensagem(enderecoIpOrigem);
@@ -121,120 +122,129 @@ public class EngineP2p {
 				mensagemUpdateCliente.getReceiveFromClient(pacoteRecebido);
 				dadosResposta = serverResponseUpdate(mensagemUpdateCliente);
 				break;
-			default:
+			case Constantes.CODIGO_RESPOSTA_LEAVE:
+				System.out.println("*SERVIDOR: Resposta de Leave recebida.");
+				nodoP2p.setAntecessorEnderecoIp(nodoP2p.getEnderecoIpNodo());
+				nodoP2p.setAntecessorId(nodoP2p.getIdNodo());
+				nodoP2p.setSucessorEnderecoIp(nodoP2p.getEnderecoIpNodo());
+				nodoP2p.setSucessorId(nodoP2p.getIdNodo());	
 				break;
+			case Constantes.CODIGO_RESPOSTA_JOIN:
+				MessageJoin messageJoin = new MessageJoin(); messageJoin.getReceiveFromServer(pacoteRecebido);
+				
+				nodoP2p.setSucessorId(Helper.byteArrayToInt(messageJoin.getRespostaSucessorId()));
+				System.out.println("*NODO: clientRequestJoin - id do sucessor atualizado para " + nodoP2p.getSucessorId() + " em " + nodoP2p.getIdNodo());
+				nodoP2p.setSucessorEnderecoIp(Helper.enderecoIpByteToString(messageJoin.getRespostaSucessorEnderecoIp()));
+				System.out.println("*NODO: clientRequestJoin - endereÃ§o IP do sucessor atualizado para " + nodoP2p.getSucessorEnderecoIp() + " em " + nodoP2p.getIdNodo());
+				nodoP2p.setAntecessorId(Helper.byteArrayToInt(messageJoin.getRespostaAntecessorId()));
+				System.out.println("*NODO: clientRequestJoin - id do antecessor atualizado para " + nodoP2p.getAntecessorId() + " em " + nodoP2p.getIdNodo());
+				nodoP2p.setAntecessorEnderecoIp(Helper.enderecoIpByteToString(messageJoin.getRespostaAntecessorEnderecoIp()));
+				System.out.println("*NODO: clientRequestJoin - endereÃ§o IP do antecessor atualizado para " + nodoP2p.getAntecessorEnderecoIp() + " em " + nodoP2p.getIdNodo());
+					
+                System.out.println(">>> Comando \"update\" inicializado atravÃ©s do join.");
+                System.out.println(">>> Atualizando rede...");
+                this.clientRequestUpdate(nodoP2p.getAntecessorEnderecoIp());
+                System.out.println(">>> Comando \"update\" foi executado atravÃ©s do join.");
+					
+				break;
+			case Constantes.CODIGO_RESPOSTA_LOOKUP:
+				MessageLookup messageLookup = new MessageLookup(); messageLookup.getReceiveFromServer(pacoteRecebido);
+				
+				System.out.println("RESPOSTA DE LOOKUP\n --- id procurado = " + Helper.byteArrayToInt(messageLookup.getRespostaIdProcurado()));
+				System.out.println(" --- sucessor = " + Helper.byteArrayToInt(messageLookup.getRespostaSucessorId()) + "(" + Helper.enderecoIpByteToString(messageLookup.getRespostaSucessorEnderecoIp())+")");
+				int id_procurado = Helper.byteArrayToInt(messageLookup.getRespostaIdProcurado());
+				if (id_procurado == nodoP2p.getIdNodo() && id_procurado == nodoP2p.getSucessorId() && id_procurado == nodoP2p.getAntecessorId()){
+					nodoP2p.setSucessorId(Helper.byteArrayToInt(messageLookup.getRespostaSucessorId()));
+					System.out.println("*NODO: clientRequestLookup - id do sucessor atualizado para " + nodoP2p.getSucessorId() + " em " + nodoP2p.getIdNodo());
+					nodoP2p.setSucessorEnderecoIp(Helper.enderecoIpByteToString(messageLookup.getRespostaSucessorEnderecoIp()));
+					System.out.println("*NODO: clientRequestLookup - endereÃ§o IP do sucessor atualizado para " + nodoP2p.getSucessorEnderecoIp() + " em " + nodoP2p.getIdNodo());
+				
+					System.out.println(">>> Comando \"join\" inicializado atravÃ©s do lookup.");
+					System.out.println(">>> Juntando-se a rede...");
+					new EngineP2p().clientRequestJoin(EngineP2p.nodoP2p.getSucessorEnderecoIp());
+					System.out.println(">>> Comando \"join\" foi executado atraves do lookup.");
+				}
+				
+		
+				break;
+				
+			default:
+                System.out.println("*SERVIDOR: Recebi mensagem desconhecida ");
+                break;
 		}
-		return dadosResposta;
+	    if (dadosResposta == null) dadosResposta = new byte[1024];
+	    
+	    return dadosResposta;
 	}
+
 	
 	private byte[] serverResponseLookup(MessageLookup mensagemLookupCliente){
-		// IMPLEMENTAÇÃO ORIGINAL PROCURANDO CONTEÚDO NA REDE
 		
-//		if (nodoP2p.getIdNodo() == Helper.byteArrayToInt(mensagemLookupCliente.getEnvioIdProcurado())){
-//			MessageLookup messageLookup = new MessageLookup();
-//			messageLookup.setRespostaCodigoMensagem(Constantes.CODIGO_RESPOSTA_LOOKUP);
-//			messageLookup.setRespostaIdProcurado(mensagemLookupCliente.getEnvioId());
-//			messageLookup.setRespostaSucessorId(Helper.intToByteArray(nodoP2p.getSucessorId()));
-//			messageLookup.setRespostaSucessorEnderecoIp(Helper.enderecoIpStringToByte(nodoP2p.getSucessorEnderecoIp()));
-//			System.out.println("*SERVIDOR: serverResponseLookup PROCESSADO.");
-//			return messageLookup.messageToSend(true);
-//		} 
-//		else {
-//			System.out.println("*SERVIDOR: serverResponseLookup LOOKUP FOWARD DISPARADO.");
-//			MessageLookup messageLookupEnvio = new MessageLookup();
-//			messageLookupEnvio.setEnvioCodigoMensagem(Constantes.CODIGO_ENVIO_LOOKUP);
-//			messageLookupEnvio.setEnvioId(mensagemLookupCliente.getEnvioId());
-//			messageLookupEnvio.setEnvioEnderecoIp(mensagemLookupCliente.getEnvioEnderecoIp());
-//			messageLookupEnvio.setEnvioIdProcurado(mensagemLookupCliente.getEnvioIdProcurado());
-//			
-//			UdpClient cliente = new UdpClient(messageLookupEnvio, nodoP2p.getSucessorEnderecoIp());
-//			cliente.send();
-//					
-//			MessageLookup messageLookupResposta = new MessageLookup();
-//			messageLookupResposta.setRespostaCodigoMensagem(Constantes.CODIGO_RESPOSTA_LOOKUP);
-//			messageLookupResposta.setRespostaIdProcurado(mensagemLookupCliente.getEnvioIdProcurado());
-//			messageLookupResposta.setRespostaSucessorId(messageLookupEnvio.getRespostaIdProcurado());
-//			messageLookupResposta.setRespostaSucessorEnderecoIp(messageLookupEnvio.getRespostaSucessorEnderecoIp());
-//			System.out.println("*SERVIDOR: serverResponseLookup PROCESSADO.");
-//			return messageLookupResposta.messageToSend(true);			
-//			
-//			// Procurar técnica para não ficar em lookup infinito.
-//		}	
-		
-		// IMPLEMENTAÇÃO PROCURANDO PELO PRÓPRIO ID
+		// IMPLEMENTAï¿½ï¿½O PROCURANDO PELO PRï¿½PRIO ID
 		
 		MessageLookup messageLookup = new MessageLookup();
 		messageLookup.setRespostaCodigoMensagem(Constantes.CODIGO_RESPOSTA_LOOKUP);
-		
+		int id_procurado = Helper.byteArrayToInt(mensagemLookupCliente.getEnvioIdProcurado());
 		//# 1 - se o nid existe
-		if (nodoP2p.getIdNodo() == Helper.byteArrayToInt(mensagemLookupCliente.getEnvioIdProcurado())){
+		if (nodoP2p.getIdNodo() == id_procurado){
 			messageLookup.setRespostaSucessorId(Helper.intToByteArray(nodoP2p.getSucessorId()));
 			messageLookup.setRespostaSucessorEnderecoIp(Helper.enderecoIpStringToByte(nodoP2p.getSucessorEnderecoIp())); 
 		}
-        //# 2 - se o nid não existe
+        //# 2 - se o nid nï¿½o existe
 		else 
-			if (Helper.byteArrayToInt(mensagemLookupCliente.getEnvioIdProcurado()) < nodoP2p.getIdNodo()){
+			if (id_procurado < nodoP2p.getIdNodo()){
 				
 				//# 2.1 - procura nid proximo caminhando para o inicio
 				if (nodoP2p.getIdNodo() <= nodoP2p.getAntecessorId()){
-					//# se esta no inicio do circulo ou só tem 1 no na rede 
-	                //# entao o novo sucessor é no atual, ou seja, o primeiro
+					//# se esta no inicio do circulo ou sï¿½ tem 1 no na rede 
+	                //# entao o novo sucessor ï¿½ no atual, ou seja, o primeiro
 					messageLookup.setRespostaSucessorId(Helper.intToByteArray(nodoP2p.getIdNodo()));
 					messageLookup.setRespostaSucessorEnderecoIp(Helper.enderecoIpStringToByte(nodoP2p.getEnderecoIpNodo())); 
 				}
 	            else
-	            	if (Helper.byteArrayToInt(mensagemLookupCliente.getEnvioIdProcurado()) > nodoP2p.getAntecessorId()){
-	                    //# se antecessor nao pode ser sucessor o novo sucessor eh o nó atual
+	            	if (id_procurado > nodoP2p.getAntecessorId()){
+	                    //# se antecessor nao pode ser sucessor o novo sucessor eh o nï¿½ atual
 	            		messageLookup.setRespostaSucessorId(Helper.intToByteArray(nodoP2p.getIdNodo()));
 						messageLookup.setRespostaSucessorEnderecoIp(Helper.enderecoIpStringToByte(nodoP2p.getEnderecoIpNodo()));
 	            	}
 	                else {
-	                    //# se nao pergunte para ele quem é o novo sucessor
-	                	MessageLookup messageLookupEnvio = new MessageLookup();
-	        			messageLookupEnvio.setEnvioCodigoMensagem(Constantes.CODIGO_ENVIO_LOOKUP);
-	        			messageLookupEnvio.setEnvioId(mensagemLookupCliente.getEnvioId());
-	        			messageLookupEnvio.setEnvioEnderecoIp(Helper.enderecoIpStringToByte(nodoP2p.getAntecessorEnderecoIp()));
-	        			messageLookupEnvio.setEnvioIdProcurado(mensagemLookupCliente.getEnvioIdProcurado());
-	                	UdpClient cliente = new UdpClient(messageLookupEnvio, nodoP2p.getAntecessorEnderecoIp());
+	                    //# se nao pergunte para ele quem ï¿½ o novo sucessor
+	                	UdpClient cliente = new UdpClient(mensagemLookupCliente, nodoP2p.getAntecessorEnderecoIp());
 	        			cliente.send();
 	        			System.out.println("*SERVIDOR: serverResponseLookup LOOKUP BACKWARD DISPARADO.");
-	        			return messageLookupEnvio.messageToSend(true);
+	        			return null;//messageLookupEnvio.messageToSend(true);
 	                } 		
 			}
 			else
-				if (Helper.byteArrayToInt(mensagemLookupCliente.getEnvioIdProcurado()) > nodoP2p.getIdNodo()){
+				if (id_procurado > nodoP2p.getIdNodo()){
 		            //# 2.2 - procura nid proximo caminhando para o fim
 					if (nodoP2p.getIdNodo() >= nodoP2p.getSucessorId()){
 		                //# se esta no fim do circulo ou so tem 1 no na rede  
-		                //# entao o sucessor é o sucessor do no atual
+		                //# entao o sucessor ï¿½ o sucessor do no atual
 						messageLookup.setRespostaSucessorId(Helper.intToByteArray(nodoP2p.getSucessorId()));
 						messageLookup.setRespostaSucessorEnderecoIp(Helper.enderecoIpStringToByte(nodoP2p.getSucessorEnderecoIp())); 
 					}
 		            else
-		            	if (Helper.byteArrayToInt(mensagemLookupCliente.getEnvioIdProcurado()) > nodoP2p.getSucessorId()){
+		            	if ( id_procurado > nodoP2p.getSucessorId()){
 		                    //# se o sucessor nao pode ser sucessor o novo sucessor eh o no atual
 		            		messageLookup.setRespostaSucessorId(Helper.intToByteArray(nodoP2p.getIdNodo()));
 							messageLookup.setRespostaSucessorEnderecoIp(Helper.enderecoIpStringToByte(nodoP2p.getEnderecoIpNodo()));
 		            	}
 		            	else {
-		                    //# se nao pergunte para ele quem é o novo sucessor
-		            		MessageLookup messageLookupEnvio = new MessageLookup();
-		        			messageLookupEnvio.setEnvioCodigoMensagem(Constantes.CODIGO_ENVIO_LOOKUP);
-		        			messageLookupEnvio.setEnvioId(mensagemLookupCliente.getEnvioId());
-		        			messageLookupEnvio.setEnvioEnderecoIp(Helper.enderecoIpStringToByte(nodoP2p.getSucessorEnderecoIp()));
-		        			messageLookupEnvio.setEnvioIdProcurado(mensagemLookupCliente.getEnvioIdProcurado());
-		                	UdpClient cliente = new UdpClient(messageLookupEnvio, nodoP2p.getSucessorEnderecoIp());
+		                    //# se nao pergunte para ele quem ï¿½ o novo sucessor
+		                	UdpClient cliente = new UdpClient(mensagemLookupCliente, nodoP2p.getSucessorEnderecoIp());
 		        			cliente.send();
 		        			System.out.println("*SERVIDOR: serverResponseLookup LOOKUP FOWARD DISPARADO.");
-		        			return messageLookupEnvio.messageToSend(true);
+		        			return null; //messageLookupEnvio.messageToSend(true);
 		            	}
 				}
 
 		messageLookup.setRespostaIdProcurado(mensagemLookupCliente.getEnvioIdProcurado());
-		messageLookup.setRespostaSucessorId(Helper.intToByteArray(nodoP2p.getSucessorId()));
-		messageLookup.setRespostaSucessorEnderecoIp(Helper.enderecoIpStringToByte(nodoP2p.getSucessorEnderecoIp()));
-		System.out.println("*SERVIDOR: serverResponseLookup PROCESSADO.");
-		return messageLookup.messageToSend(true);
+		UdpClient origem = new UdpClient(messageLookup,Helper.enderecoIpByteToString(mensagemLookupCliente.getEnvioEnderecoIp()));
+		origem.send(true);
+		System.out.println("*SERVIDOR: serverResponseLookup PROCESSADO." );
+		return null;
+		// messageLookup.messageToSend(true);
 	}
 	
 	private byte[] serverResponseJoin(MessageJoin mensagemJoinCliente){
@@ -248,7 +258,7 @@ public class EngineP2p {
 		nodoP2p.setAntecessorId(Helper.byteArrayToInt(mensagemJoinCliente.getEnvioId()));
 		System.out.println("*NODO: serverResponseJoin - id do antecessor atualizado para " + nodoP2p.getAntecessorId() + " em " + nodoP2p.getIdNodo());
 		nodoP2p.setAntecessorEnderecoIp(Helper.enderecoIpByteToString(mensagemJoinCliente.getEnderecoIpOrigemMensagem()));
-		System.out.println("*NODO: serverResponseJoin - endereço IP do antecessor atualizado para " + nodoP2p.getAntecessorEnderecoIp() + " em " + nodoP2p.getIdNodo());
+		System.out.println("*NODO: serverResponseJoin - endereï¿½o IP do antecessor atualizado para " + nodoP2p.getAntecessorEnderecoIp() + " em " + nodoP2p.getIdNodo());
 
 		System.out.println("*SERVIDOR: serverResponseJoin PROCESSADO.");
 		return messageJoin.messageToSend(true);
@@ -263,14 +273,14 @@ public class EngineP2p {
 			nodoP2p.setSucessorId(Helper.byteArrayToInt(mensagemLeaveCliente.getEnvioSucessorId()));
 			System.out.println("*NODO: serverResponseUpdate - id do sucessor atualizado para " + nodoP2p.getSucessorId() + " em " + nodoP2p.getIdNodo());
 			nodoP2p.setSucessorEnderecoIp(Helper.enderecoIpByteToString(mensagemLeaveCliente.getEnvioSucessorEnderecoIp()));
-			System.out.println("*NODO: serverResponseUpdate - endereço IP do sucessor atualizado para " + nodoP2p.getSucessorEnderecoIp() + " em " + nodoP2p.getIdNodo());
+			System.out.println("*NODO: serverResponseUpdate - endereï¿½o IP do sucessor atualizado para " + nodoP2p.getSucessorEnderecoIp() + " em " + nodoP2p.getIdNodo());
 			
 		} else
 			if (nodoP2p.getAntecessorId() == Helper.byteArrayToInt(mensagemLeaveCliente.getEnvioId())){
 				nodoP2p.setAntecessorId(Helper.byteArrayToInt(mensagemLeaveCliente.getEnvioAntecessorId()));
 				System.out.println("*NODO: serverResponseLeave - id do antecessor atualizado para " + nodoP2p.getAntecessorId() + " em " + nodoP2p.getIdNodo());
 				nodoP2p.setAntecessorEnderecoIp(Helper.enderecoIpByteToString(mensagemLeaveCliente.getEnvioAntecessorEnderecoIp()));
-				System.out.println("*NODO: serverResponseLeave - endereço IP do antecessor atualizado para " + nodoP2p.getAntecessorEnderecoIp() + " em " + nodoP2p.getIdNodo());
+				System.out.println("*NODO: serverResponseLeave - endereï¿½o IP do antecessor atualizado para " + nodoP2p.getAntecessorEnderecoIp() + " em " + nodoP2p.getIdNodo());
 			}
 
 		System.out.println("*SERVIDOR: serverResponseLeave PROCESSADO.");
@@ -285,7 +295,7 @@ public class EngineP2p {
 		nodoP2p.setSucessorId(Helper.byteArrayToInt(mensagemUpdateCliente.getEnvioSucessorId()));
 		System.out.println("*NODO: serverResponseUpdate - id do sucessor atualizado para " + nodoP2p.getSucessorId() + " em " + nodoP2p.getIdNodo());
 		nodoP2p.setSucessorEnderecoIp(Helper.enderecoIpByteToString(mensagemUpdateCliente.getEnvioSucessorEnderecoIp()));
-		System.out.println("*NODO: serverResponseUpdate - endereço IP do sucessor atualizado para " + nodoP2p.getSucessorEnderecoIp() + " em " + nodoP2p.getIdNodo());
+		System.out.println("*NODO: serverResponseUpdate - endereï¿½o IP do sucessor atualizado para " + nodoP2p.getSucessorEnderecoIp() + " em " + nodoP2p.getIdNodo());
 		
 		System.out.println("*SERVIDOR: serverResponseUpdate PROCESSADO.");
 		return messageUpdate.messageToSend(true);
@@ -301,13 +311,7 @@ public class EngineP2p {
 		
 		UdpClient cliente = new UdpClient(messageLookup, enderecoIp);
 		cliente.send();
-				
-		if (messageLookup.getRespostaIdProcurado() != null && messageLookup.getRespostaIdProcurado().length > 0){
-			nodoP2p.setSucessorId(Helper.byteArrayToInt(messageLookup.getRespostaSucessorId()));
-			System.out.println("*NODO: clientRequestLookup - id do sucessor atualizado para " + nodoP2p.getSucessorId() + " em " + nodoP2p.getIdNodo());
-			nodoP2p.setSucessorEnderecoIp(Helper.enderecoIpByteToString(messageLookup.getRespostaSucessorEnderecoIp()));
-			System.out.println("*NODO: clientRequestLookup - endereço IP do sucessor atualizado para " + nodoP2p.getSucessorEnderecoIp() + " em " + nodoP2p.getIdNodo());
-		}
+
 	}
 	
 	public void clientRequestJoin(String enderecoIpSucessor){
@@ -317,11 +321,7 @@ public class EngineP2p {
 		UdpClient cliente = new UdpClient(messageJoin, nodoP2p.getSucessorEnderecoIp());
 		cliente.send();
 		
-		nodoP2p.setAntecessorId(Helper.byteArrayToInt(messageJoin.getRespostaAntecessorId()));
-		System.out.println("*NODO: clientRequestJoin - id do antecessor atualizado para " + nodoP2p.getAntecessorId() + " em " + nodoP2p.getIdNodo());
-		nodoP2p.setAntecessorEnderecoIp(Helper.enderecoIpByteToString(messageJoin.getRespostaAntecessorEnderecoIp()));
-		System.out.println("*NODO: clientRequestJoin - endereço IP do antecessor atualizado para " + nodoP2p.getAntecessorEnderecoIp() + " em " + nodoP2p.getIdNodo());
-	}
+		}
 	
 	public void clientRequestUpdate(String enderecoIpAntecessor){
 		MessageUpdate messageUpdate = new MessageUpdate();
@@ -341,14 +341,13 @@ public class EngineP2p {
 		messageLeave.setEnvioSucessorEnderecoIp(Helper.enderecoIpStringToByte(nodoP2p.getSucessorEnderecoIp()));
 		messageLeave.setEnvioAntecessorId(Helper.intToByteArray(nodoP2p.getAntecessorId()));
 		messageLeave.setEnvioAntecessorEnderecoIp(Helper.enderecoIpStringToByte(nodoP2p.getAntecessorEnderecoIp()));
-		UdpClient clienteAntecessor = new UdpClient(messageLeave, nodoP2p.getAntecessorEnderecoIp());
-		clienteAntecessor.send();
-		UdpClient clienteSucessor = new UdpClient(messageLeave, nodoP2p.getSucessorEnderecoIp());
-		clienteSucessor.send();
-		
-		nodoP2p.setAntecessorEnderecoIp(nodoP2p.getEnderecoIpNodo());
-		nodoP2p.setAntecessorId(nodoP2p.getIdNodo());
-		nodoP2p.setSucessorEnderecoIp(nodoP2p.getEnderecoIpNodo());
-		nodoP2p.setSucessorId(nodoP2p.getIdNodo());
+		if (!nodoP2p.getEnderecoIpNodo().equals(nodoP2p.getAntecessorEnderecoIp())){
+			UdpClient clienteAntecessor = new UdpClient(messageLeave, nodoP2p.getAntecessorEnderecoIp());
+			clienteAntecessor.send();
+		}
+		if (!nodoP2p.getEnderecoIpNodo().equals(nodoP2p.getSucessorEnderecoIp())){
+			UdpClient clienteSucessor = new UdpClient(messageLeave, nodoP2p.getSucessorEnderecoIp());
+			clienteSucessor.send();
+		}
 	}
 }

@@ -12,7 +12,7 @@ public class Helper {
             MessageDigest md = MessageDigest.getInstance("MD5");
             byte[] messageDigest = md.digest(text.getBytes());
             BigInteger number = new BigInteger(1, messageDigest);
-// Removido para considerar apenas inteiros para este trabalho específico
+// Removido para considerar apenas inteiros para este trabalho especï¿½fico
 //            String hashtext = number.toString(16);
 //            while (hashtext.length() < 32) {
 //                hashtext = "0" + hashtext;
@@ -32,7 +32,16 @@ public class Helper {
 	            (byte)(value >>> 8),
 	            (byte)value};
 	}
-	
+	final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
+	public static String bytesToHex(byte[] bytes) {
+	    char[] hexChars = new char[bytes.length * 2];
+	    for ( int j = 0; j < bytes.length; j++ ) {
+	        int v = bytes[j] & 0xFF;
+	        hexChars[j * 2] = hexArray[v >>> 4];
+	        hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+	    }
+	    return new String(hexChars);
+	}
 	public static final int byteArrayToInt(byte[] bytes) {
 	     return bytes[0] << 24 | (bytes[1] & 0xFF) << 16 | (bytes[2] & 0xFF) << 8 | (bytes[3] & 0xFF);
 	}

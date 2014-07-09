@@ -25,55 +25,44 @@ public class UdpClient extends Thread {
 		this.enderecoIp = enderecoIp;
 	}
 
-	public void send() {
+	public void send(){
+		send(false);
+	}
+	public void send(Boolean serverFlag) {
     	  DatagramSocket socketCliente = null;
 		  try {
 			  socketCliente = new DatagramSocket();
 			  System.out.println("*CLIENTE: Socket inicializado.");
 		  } catch (SocketException e) {
-			  System.err.println("*ERRO: o cliente n„o conseguiu inicializar o socket.");
+			  System.err.println("*ERRO: o cliente n√£o conseguiu inicializar o socket.");
 			  e.printStackTrace();
 			  return;
 		  }
     	  InetAddress ip = null;
 		  try {
 			  ip = InetAddress.getByName(enderecoIp);
-			  System.out.println("*CLIENTE: O endereÁo ip " + enderecoIp + " È v·lido.");
+			  System.out.println("*CLIENTE: O endere√ßo ip " + enderecoIp + " √© v√°lido.");
 	  	  } catch (UnknownHostException e) {
-	  		  System.err.println("*ERRO: o cliente n„o conseguiu resolver o endereÁo IP "+ enderecoIp);
+	  		  System.err.println("*ERRO: o cliente n√£o conseguiu resolver o endere√ßo IP "+ enderecoIp);
 	  		  e.printStackTrace();
 	  		  socketCliente.close();
 	  		  return;
 		  } 
 		  
 	      byte[] dadosEnvio = new byte[1024]; 
-	      dadosEnvio = mensagem.messageToSend(false);
-	      System.out.println("*CLIENTE: Preparando conex„o com o servidor "+ enderecoIp + " para envio de pacote.");
+	      dadosEnvio = mensagem.messageToSend(serverFlag);
+	      System.out.println("*CLIENTE: Preparando conex√£o com o servidor "+ enderecoIp + " para envio de pacote.");
 	      DatagramPacket pacoteEnviado = new DatagramPacket(dadosEnvio, dadosEnvio.length, ip, Constantes.PORTA); 
 	      try {
 	    	  socketCliente.send(pacoteEnviado);
-	    	  System.out.println("*CLIENTE: Mensagem "+ Helper.byteArrayToString(dadosEnvio) + " enviada ao servidor " + enderecoIp);
+	    	  System.out.println("*CLIENTE: Mensagem "+ Helper.bytesToHex(dadosEnvio) + " enviada ao servidor " + enderecoIp);
 	      } catch (IOException e) {
-	    	  System.err.println("*ERRO: o cliente n„o conseguiu enviar a mensagem " + Helper.byteArrayToString(dadosEnvio) + " ao servidor " + enderecoIp);
-	    	  e.printStackTrace();
-	    	  socketCliente.close();
-	    	  return;
-	      } 
-	  
-	      byte[] dadosRecebidos = new byte[1024];
-	      DatagramPacket pacoteRecebido = new DatagramPacket(dadosRecebidos, dadosRecebidos.length); 
-	      try {
-	    	  socketCliente.receive(pacoteRecebido);
-	    	  mensagem.getReceiveFromServer(pacoteRecebido.getData());
-	    	  System.out.println("*CLIENTE: Resposta " + Helper.byteArrayToString(pacoteRecebido.getData()) + " recebida do servidor "+ enderecoIp);
-	      } catch (IOException e) {
-	    	  System.err.println("*ERRO: o cliente n„o conseguiu receber resposta do servidor "+ enderecoIp);
+	    	  System.err.println("*ERRO: o cliente n√£o conseguiu enviar a mensagem " + Helper.bytesToHex(dadosEnvio) + " ao servidor " + enderecoIp);
 	    	  e.printStackTrace();
 	    	  socketCliente.close();
 	    	  return;
 	      } 
 	      socketCliente.close(); 
-	      System.out.println("*CLIENTE: conex„o fechada com o servidor "+ enderecoIp);
 	}
 	
 	@Override

@@ -23,7 +23,7 @@ public class UdpServer extends Thread {
 			socketServidor = new DatagramSocket(Constantes.PORTA, EngineP2p.enderecoIpHost);
 			System.out.println("*SERVIDOR: Inicializado na porta "+ Constantes.PORTA);
 		} catch (SocketException e) {
-			System.err.println("*ERRO: o servidor não conseguiu inicializar o socket na porta "+ Constantes.PORTA);
+			System.err.println("*ERRO: o servidor nï¿½o conseguiu inicializar o socket na porta "+ Constantes.PORTA);
 			e.printStackTrace();
 			return;
 		} 
@@ -35,9 +35,9 @@ public class UdpServer extends Thread {
 		    DatagramPacket pacoteRecebido = new DatagramPacket(dadosRecebidos, dadosRecebidos.length); 
 		    try {
 				socketServidor.receive(pacoteRecebido);
-				System.out.println("*SERVIDOR: Pacote recebido: " + Helper.byteArrayToString(pacoteRecebido.getData()));
+				System.out.println("*SERVIDOR: Pacote recebido: " + Helper.bytesToHex(pacoteRecebido.getData()));
 			} catch (IOException e) {
-				System.err.println("*ERRO: o servidor não conseguiu receber um pacote.");
+				System.err.println("*ERRO: o servidor nï¿½o conseguiu receber um pacote.");
 				e.printStackTrace();
 			} 
 		    
@@ -45,14 +45,18 @@ public class UdpServer extends Thread {
 		    InetAddress enderecoIp = pacoteRecebido.getAddress(); 
 		    int porta = pacoteRecebido.getPort();
 		    dadosResposta = new EngineP2p().response(Helper.enderecoIpStringToByte(enderecoIp.getHostAddress()), pacoteRecebido.getData());    
-		    DatagramPacket pacoteEnviado = new DatagramPacket(dadosResposta, dadosResposta.length, enderecoIp, porta); 
-		    try {
-				socketServidor.send(pacoteEnviado);
-				System.out.println("*SERVIDOR: Resposta enviada ao cliente " + enderecoIp.toString() + ": " + Helper.byteArrayToString(dadosResposta));
-			} catch (IOException e) {
-				System.err.println("*ERRO: o servidor não conseguiu enviar um pacote.");
-				e.printStackTrace();
-			} 
+		 
+		    if (dadosResposta != null && dadosResposta.length < 100){ //
+		     
+		    DatagramPacket pacoteEnviado = new DatagramPacket(dadosResposta, dadosResposta.length, enderecoIp, Constantes.PORTA); 
+		    	try {
+		    		socketServidor.send(pacoteEnviado);
+		    		System.out.println("*SERVIDOR: Resposta enviada ao cliente " + enderecoIp.toString() + ": " + Helper.bytesToHex(dadosResposta));
+		    	} catch (IOException e) {
+		    		System.err.println("*ERRO: o servidor nao conseguiu enviar um pacote.");
+		    		e.printStackTrace();
+		    	} 
+		    }	
 		}
 	}
 
