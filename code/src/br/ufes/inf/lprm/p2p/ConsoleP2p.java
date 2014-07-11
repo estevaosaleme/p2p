@@ -28,7 +28,7 @@ public class ConsoleP2p {
 					break;
 					
 				case "quit":
-					new EngineP2p().clientRequestLeave();
+					EngineP2p.nodoP2p.leave();
 					System.out.println(">>> Comando \"quit\" foi executado.");
 					System.exit(0);
 					break;
@@ -45,14 +45,14 @@ public class ConsoleP2p {
 					}
 					
 					System.out.println(">>> Conectando na rede...");
-					new EngineP2p().clientRequestLookup(enderecoIpLookup, String.valueOf(EngineP2p.nodoP2p.getIdNodo()));
+					EngineP2p.nodoP2p.lookup(enderecoIpLookup, EngineP2p.nodoP2p.getIdNodo(), EngineP2p.nodoP2p.getEnderecoIpNodo(), EngineP2p.nodoP2p.getIdNodo());
 					System.out.println(">>> Comando \"lookup\" foi executado.");
 					
 					
 					break;	
 					
 				case "leave":
-					new EngineP2p().clientRequestLeave();
+					EngineP2p.nodoP2p.leave();
 					System.out.println(">>> Comando \"leave\" foi executado.");
 					break;
 					

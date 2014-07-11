@@ -29,7 +29,6 @@ public class UdpServer extends Thread {
 		} 
 		  
 	    byte[] dadosRecebidos = new byte[1024]; 
-	    byte[] dadosResposta = new byte[1024]; 
 	
 		while(true && socketServidor != null) { 
 		    DatagramPacket pacoteRecebido = new DatagramPacket(dadosRecebidos, dadosRecebidos.length); 
@@ -43,20 +42,7 @@ public class UdpServer extends Thread {
 		    
 		    System.out.println("*SERVIDOR: Preparando resposta...");   
 		    InetAddress enderecoIp = pacoteRecebido.getAddress(); 
-		    int porta = pacoteRecebido.getPort();
-		    dadosResposta = new EngineP2p().response(Helper.enderecoIpStringToByte(enderecoIp.getHostAddress()), pacoteRecebido.getData());    
-		 
-		    if (dadosResposta != null && dadosResposta.length < 100){ //
-		     
-		    DatagramPacket pacoteEnviado = new DatagramPacket(dadosResposta, dadosResposta.length, enderecoIp, Constantes.PORTA); 
-		    	try {
-		    		socketServidor.send(pacoteEnviado);
-		    		System.out.println("*SERVIDOR: Resposta enviada ao cliente " + enderecoIp.toString() + ": " + Helper.bytesToHex(dadosResposta));
-		    	} catch (IOException e) {
-		    		System.err.println("*ERRO: o servidor nao conseguiu enviar um pacote.");
-		    		e.printStackTrace();
-		    	} 
-		    }	
+		    EngineP2p.response(Helper.enderecoIpStringToByte(enderecoIp.getHostAddress()), pacoteRecebido.getData());    
 		}
 	}
 
