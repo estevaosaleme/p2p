@@ -114,12 +114,12 @@ public class EngineP2p {
 				System.out.println(">>> Leave recebido...");
 				MessageLeave messageLeave = new MessageLeave();
 				messageLeave.getReceiveFromClient(pacoteRecebido);
-                if (messageLeave.getEnvioId() == messageLeave.getEnvioAntecessorId()) {
+                if (Helper.byteArrayToInt(messageLeave.getEnvioId()) == nodoP2p.getAntecessorId()) {
                 	nodoP2p.setAntecessorId(Helper.byteArrayToInt(messageLeave.getEnvioAntecessorId()));
                 	nodoP2p.setAntecessorEnderecoIp(Helper.enderecoIpByteToString(messageLeave.getEnvioAntecessorEnderecoIp()));
                 	nodoP2p.respostaLeave(Helper.enderecoIpByteToString(enderecoIpOrigem));
-                }   
-                if (messageLeave.getEnvioId() == messageLeave.getEnvioSucessorId()) {
+                } 
+                if (Helper.byteArrayToInt(messageLeave.getEnvioId()) == nodoP2p.getSucessorId()) {
                 	nodoP2p.setSucessorId(Helper.byteArrayToInt(messageLeave.getEnvioSucessorId()));
                 	nodoP2p.setSucessorEnderecoIp(Helper.enderecoIpByteToString(messageLeave.getEnvioSucessorEnderecoIp()));
                 	nodoP2p.respostaLeave(Helper.enderecoIpByteToString(enderecoIpOrigem));

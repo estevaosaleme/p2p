@@ -67,21 +67,24 @@ public class Nodo {
     
     public void leave()
     {   
-    	MessageLeave messageLeave = new MessageLeave();
-		messageLeave.setEnvioCodigoMensagem(Constantes.CODIGO_ENVIO_LEAVE);
-		messageLeave.setEnvioId(Helper.intToByteArray(getIdNodo()));
-		messageLeave.setEnvioSucessorId(Helper.intToByteArray(getSucessorId()));
-		messageLeave.setEnvioSucessorEnderecoIp(Helper.enderecoIpStringToByte(getSucessorEnderecoIp()));
-		messageLeave.setEnvioAntecessorId(Helper.intToByteArray(getAntecessorId()));
-		messageLeave.setEnvioAntecessorEnderecoIp(Helper.enderecoIpStringToByte(getAntecessorEnderecoIp()));
-		if (!getEnderecoIpNodo().equals(getAntecessorEnderecoIp())){
+    	if (getIdNodo() != getSucessorId()){
+	    	MessageLeave messageLeave = new MessageLeave();
+			messageLeave.setEnvioCodigoMensagem(Constantes.CODIGO_ENVIO_LEAVE);
+			messageLeave.setEnvioId(Helper.intToByteArray(getIdNodo()));
+			messageLeave.setEnvioSucessorId(Helper.intToByteArray(getSucessorId()));
+			messageLeave.setEnvioSucessorEnderecoIp(Helper.enderecoIpStringToByte(getSucessorEnderecoIp()));
+			messageLeave.setEnvioAntecessorId(Helper.intToByteArray(getAntecessorId()));
+			messageLeave.setEnvioAntecessorEnderecoIp(Helper.enderecoIpStringToByte(getAntecessorEnderecoIp()));
 			UdpClient clienteAntecessor = new UdpClient(messageLeave, getAntecessorEnderecoIp());
 			clienteAntecessor.send();
-		}
-		if (!getEnderecoIpNodo().equals(getSucessorEnderecoIp())){
 			UdpClient clienteSucessor = new UdpClient(messageLeave, getSucessorEnderecoIp());
 			clienteSucessor.send();
-		}   
+			
+			setAntecessorEnderecoIp(getEnderecoIpNodo());
+			setAntecessorId(getIdNodo());
+			setSucessorEnderecoIp(getEnderecoIpNodo());
+			setSucessorId(getIdNodo());
+		}  
     }        
 
     
@@ -118,6 +121,7 @@ public class Nodo {
 		UdpClient cliente = new UdpClient(messageJoin, enderecoIp);
 		cliente.send(true);        
     }        
+    
     public void respostaLeave(String enderecoIp)
     {
     	MessageLeave messageLeave = new MessageLeave();
